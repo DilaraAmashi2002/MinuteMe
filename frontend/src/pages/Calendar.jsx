@@ -43,6 +43,7 @@ function eventStyleGetter(event) {
 function Calendar() {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [date, setDate] = useState(new Date()); // <-- 1. Add state for the date
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -63,6 +64,11 @@ function Calendar() {
         };
         fetchEvents();
     }, []);
+
+    // 2. Add a handler for when the user navigates months
+    const handleNavigate = (newDate) => {
+        setDate(newDate);
+    };
 
     if (loading) {
         return <p>Loading calendar...</p>;
@@ -99,6 +105,8 @@ function Calendar() {
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
+                date={date} // <-- 3. Control the calendar's date
+                onNavigate={handleNavigate} // <-- 4. Tell the calendar how to update the date
                 style={{
                     height: "700px", // Make calendar taller
                     background: "var(--primary-dark)",

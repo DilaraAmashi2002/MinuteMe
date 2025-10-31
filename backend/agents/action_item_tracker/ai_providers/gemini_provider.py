@@ -12,7 +12,7 @@ if not api_key:
 genai.configure(api_key=api_key)
 
 # Using a valid model from the list you provided.
-model = genai.GenerativeModel("gemini-2.5-pro")
+model = genai.GenerativeModel("gemini-2.0-flash-exp")
 
 def clean_json_output(raw_output: str):
     try:
@@ -39,6 +39,20 @@ def extract_action_items(meeting_text:str):
     response = model.generate_content(prompt)
     return clean_json_output(response.text)
 
+def generate_summary_gemini(text: str) -> str:
+    prompt = f"Summarize the following text:\n{text}"
+    response = model.generate_content(prompt)
+    return response.text.strip()
+
+def extract_key_decisions_gemini(text: str) -> list:
+    prompt = f"Extract key decisions from the following text. Respond with a JSON list of strings. For example: [\"Decision one\", \"Decision two\"]\n\nText: {text}"
+    response = model.generate_content(prompt)
+    return clean_json_output(response.text)
+
+def extract_future_topics_gemini(text: str) -> list:
+    prompt = f"Extract future discussion topics from the following text. Respond with a JSON list of strings. For example: [\"Topic one\", \"Topic two\"]\n\nText: {text}"
+    response = model.generate_content(prompt)
+    return clean_json_output(response.text)
 
 ###########################################################
 #Sample Output

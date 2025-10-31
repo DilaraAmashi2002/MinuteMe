@@ -260,15 +260,14 @@ async def get_events_endpoint(current_user: dict = Depends(get_current_user)):
             deadline_date = dateparser.parse(deadline)
             if deadline_date:
                 events.append({
-                    "title": f"Action: {item.get('task', 'Task')}",
+                    "title": item.get("task", "Untitled Action Item"),
                     "start": deadline_date,
                     "end": deadline_date,
                     "allDay": True,
                     "resource": {
                         "type": "action-item",
                         "owner": item.get("owner"),
-                        "status": item.get("status"),
-                        "minutes_id": item.get("minutes_id")
+                        "status": item.get("status", "pending")
                     }
                 })
 
