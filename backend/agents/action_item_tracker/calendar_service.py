@@ -25,10 +25,12 @@ def get_calendar_service(user_id: str):
         if creds.expired and creds.refresh_token:
             print(f"Refreshing expired token for user {user_id}")
             creds.refresh(Request())
-            # --- FIX: Save the refreshed credentials, ensuring refresh_token is included ---
+            
+            # --- THE CORRECT FIX: Pass the flat credentials dictionary directly ---
+            # The save_google_credentials function in database.py handles nesting it.
             save_google_credentials(user_id, {
                 'token': creds.token,
-                'refresh_token': creds.refresh_token, # This was missing
+                'refresh_token': creds.refresh_token,
                 'token_uri': creds.token_uri,
                 'client_id': creds.client_id,
                 'client_secret': creds.client_secret,

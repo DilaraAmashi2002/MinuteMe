@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import api from "../lib/axios";
-import { Link } from "react-router-dom";
+// --- NEW: Import hooks and icons ---
+import { Link, useNavigate } from "react-router-dom";
+import { useUserRole } from "../hooks/useUserRole";
+import { ExternalLink, Star } from "lucide-react";
 // --- MODIFIED: Import isValid to check for valid dates ---
 import { format, isPast, parseISO, isValid } from "date-fns";
 import "../App.css";
@@ -10,6 +13,9 @@ function ActionItems() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filter, setFilter] = useState("all"); // all, pending, completed
+    // --- NEW: Get user tier and navigation function ---
+    const { isPremium } = useUserRole();
+    const navigate = useNavigate();
     
     useEffect(() => {
         fetchActionItems();
@@ -102,11 +108,35 @@ function ActionItems() {
     
     if (error) return <div className="error-container">{error}</div>;
 
+    const handleGoogleCalendarClick = () => {
+        if (isPremium) {
+            window.open("https://calendar.google.com", "_blank");
+        } else {
+            navigate("/upgrade");
+        }
+    };
+
     return (
         <div className="form-container">
-            <div className="page-header">
-                <h2>Action Items</h2>
-                <p className="subtitle">Track and manage tasks from your meetings</p>
+            <div className="page-header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h2>Action Items</h2>
+                    <p className="subtitle">Track and manage tasks from your meetings</p>
+                </div>
+                {/* --- NEW: Conditional Button --- */}
+                <button onClick={handleGoogleCalendarClick} className="secondary-action-btn">
+                    {isPremium ? (
+                        <>
+                            <ExternalLink size={16} style={{ marginRight: '8px' }} />
+                            Visit Google Calendar
+                        </>
+                    ) : (
+                        <>
+                            <Star size={16} style={{ marginRight: '8px' }} />
+                            Upgrade for Calendar Sync
+                        </>
+                    )}
+                </button>
             </div>
             
             <div className="filter-bar">

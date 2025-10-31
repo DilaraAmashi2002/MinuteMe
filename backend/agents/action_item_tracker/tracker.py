@@ -8,7 +8,7 @@ import nltk
 from datetime import datetime, timedelta
 import dateparser
 # NEW: Import the function to get a specific minutes document
-from lib.database import get_minutes_by_id, save_action_item
+from lib.database import get_minutes_by_id, save_action_item, get_google_credentials
 from .ai_providers.gemini_provider import extract_action_items
 
 # The NLTK download logic has been moved to a central setup file (lib/nltk_setup.py)
@@ -85,21 +85,26 @@ def extract_and_schedule_tasks(user_id: str, minutes_id: str, schedule=True):
 
     # Step 5: Schedule action items (if enabled)
     if schedule:
-        print("[DEBUG] Scheduling action items...")
-        for idx, item in enumerate(action_items):
-            task = item.get("task")
-            owner = item.get("owner")
-            deadline = item.get("deadline")
-            duration = item.get("duration")
-            print(f"[DEBUG] Scheduling task {idx + 1}: {task}, Owner: {owner}, Deadline: {deadline}, Duration: {duration} minutes")
-            schedule_action_item(
-                user_id=user_id,
-                task_name=task,
-                description=f"Action item assigned to {owner}",
-                deadline_str=deadline,
-                owner=owner,
-                duration_minutes=duration
-            )
+        # --- THE FIX: Check for credentials BEFORE trying to schedule ---
+        print("[DEBUG] Checking for Google Calendar integration...")
+        if not get_google_credentials(user_id):
+            print("[WARN] Google Calendar not connected for this user. Skipping scheduling.")
+        else:
+            print("[DEBUG] Google Calendar connected. Proceeding with scheduling action items...")
+            for idx, item in enumerate(action_items):
+                task = item.get("task")
+                owner = item.get("owner")
+                deadline = item.get("deadline")
+                duration = item.get("duration")
+                print(f"[DEBUG] Scheduling task {idx + 1}: {task}, Owner: {owner}, Deadline: {deadline}, Duration: {duration} minutes")
+                schedule_action_item(
+                    user_id=user_id,
+                    task_name=task,
+                    description=f"Action item assigned to {owner}",
+                    deadline_str=deadline,
+                    owner=owner,
+                    duration_minutes=duration
+                )
 
     # Step 6: Save action items to the database
     print("[DEBUG] Saving action items to the database...")
