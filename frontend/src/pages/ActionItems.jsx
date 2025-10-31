@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import api from "../lib/axios";
 import { Link } from "react-router-dom";
-import { format, isPast, parseISO } from "date-fns";
+// --- MODIFIED: Import isValid to check for valid dates ---
+import { format, isPast, parseISO, isValid } from "date-fns";
 import "../App.css";
 
 function ActionItems() {
@@ -140,6 +141,10 @@ function ActionItems() {
                     {filteredItems.map((item) => {
                         const statusClass = getStatusBadgeClass(item.status, item.deadline);
                         
+                        // --- MODIFIED: Safely parse the date ---
+                        const deadlineDate = item.deadline ? parseISO(item.deadline) : null;
+                        const isDeadlineValid = deadlineDate && isValid(deadlineDate);
+
                         return (
                             <div key={item.id} className="card action-item-card">
                                 <div className="card-header">
@@ -158,7 +163,8 @@ function ActionItems() {
                                     <div className="detail">
                                         <span className="label">Due:</span> 
                                         <span className="value">
-                                            {item.deadline !== "TBD" ? format(new Date(item.deadline), "MMM d, yyyy") : "TBD"}
+                                            {/* --- MODIFIED: Render only if the date is valid --- */}
+                                            {isDeadlineValid ? format(deadlineDate, "MMM d, yyyy") : "TBD"}
                                         </span>
                                     </div>
                                     {item.minutes_id && (

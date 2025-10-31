@@ -99,6 +99,20 @@ def run_full_automation_flow(user_id: str, meeting_id: str, video_url: str = Non
 
         # --- Final Step: Increment Quota & Notify ---
         increment_automation_cycle(meeting_id, user_id)
+        
+        # --- NEW: Prompt for Google Calendar Integration ---
+        db = get_db()
+        user_info = db.users.find_one({"user_id": user_id})
+        if user_info and user_info.get("tier") == "premium":
+            if not get_google_credentials(user_id):
+                create_notification(
+                    user_id=user_id,
+                    title="Enhance Your Workflow",
+                    message="Connect your Google Calendar to automatically schedule action items.",
+                    type="prompt_google_calendar_integration"
+                )
+                print(f"🤖 [Auto-Flow] Sent Google Calendar integration prompt to premium user {user_id}.")
+
         notifier.success()
         print(f"🤖 [Auto-Flow] Success for user {user_id}, meeting {meeting_id}")
 
@@ -447,16 +461,16 @@ async def generate_action_items_endpoint(
         if not minutes_id:
             raise HTTPException(status_code=400, detail="minutes_id is required.")
         
-        # This function now returns the list of created action items
-        result = extract_and_schedule_tasks(user_id=user_id, minutes_id=minutes_id)
+        # --- MODIFIED: Capture the return value which contains the corrected items ---
+        action_items_result = extract_and_schedule_tasks(user_id=user_id, minutes_id=minutes_id)
         
-        if result is None:
-            raise HTTPException(status_code=404, detail="Failed to process action items. Minutes not found.")
+        if action_items_result is None:
+            raise HTTPException(status_code=404, detail="Failed to process action items. Minutes document may not exist.")
             
-        return result.get("action_items", []) # Return the list of action items
+        return action_items_result
     except Exception as e:
         print(f"Error generating action items: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
 
 
 @app.patch("/agenda/{agenda_id}")

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../lib/axios";
-import { format, isPast, parseISO } from "date-fns"; // Import date-fns helpers
+import { format, isValid, parseISO } from "date-fns";
+import { useAutomation } from "../context/AutomationContext";
 
 function MinuteDetail() {
     const { id } = useParams();

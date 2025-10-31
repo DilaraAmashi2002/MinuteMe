@@ -70,8 +70,16 @@ def extract_and_schedule_tasks(user_id: str, minutes_id: str, schedule=True):
     print(f"[DEBUG] Meeting date: {meeting_date}, Next meeting date: {next_meeting_date}")
 
     for idx, item in enumerate(action_items):
+        # --- MODIFIED: Add robust fallback for deadline ---
         if not item.get("deadline"):
-            item["deadline"] = next_meeting_date or meeting_date
+            # Use next meeting date, then meeting date, then default to 7 days from now
+            fallback_date = next_meeting_date or meeting_date
+            if fallback_date:
+                item["deadline"] = fallback_date
+            else:
+                item["deadline"] = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
+            print(f"[DEBUG] No deadline from AI. Assigned fallback deadline: {item['deadline']}")
+        
         item["duration"] = 60  # Default duration
         print(f"[DEBUG] Action item {idx + 1}: {item}")
 
