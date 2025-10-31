@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../lib/axios";
 import { format, isValid, parseISO } from "date-fns";
 import { useAutomation } from "../context/AutomationContext";
+import BlurrableText from "../components/BlurrableText"; // Import the new component
 
 function MinuteDetail() {
     const { id } = useParams();
@@ -110,7 +111,10 @@ function MinuteDetail() {
         <div className="form-container">
             <div className="page-header">
                 <h2>Meeting of {minute.date}</h2>
-                <p className="subtitle">{minute.meeting_name || `ID: ${minute.meeting_id}`}</p>
+                {/* --- MODIFIED: Use the BlurrableText component --- */}
+                <p className="subtitle">
+                    {minute.meeting_name || <BlurrableText text={minute.meeting_id} prefix="ID:" />}
+                </p>
             </div>
             
             {message && <div className="message-banner">{message}</div>}

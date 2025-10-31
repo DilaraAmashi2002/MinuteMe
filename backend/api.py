@@ -797,19 +797,22 @@ async def exchange_google_auth_code(
             redirect_uri="http://localhost:5173/settings"
         )
         flow.fetch_token(code=code)
-        creds = flow.credentials
-
-        # Save credentials to the database
-        save_google_credentials(user_id, {
-            'token': creds.token,
-            'refresh_token': creds.refresh_token,
-            'token_uri': creds.token_uri,
-            'client_id': creds.client_id,
-            'client_secret': creds.client_secret,
-            'scopes': creds.scopes
-        })
+        credentials = flow.credentials
+        
+        # --- FIX: Ensure refresh_token is saved on initial exchange ---
+        creds_dict = {
+            'token': credentials.token,
+            'refresh_token': credentials.refresh_token, # This was missing
+            'token_uri': credentials.token_uri,
+            'client_id': credentials.client_id,
+            'client_secret': credentials.client_secret,
+            'scopes': credentials.scopes
+        }
+        
+        save_google_credentials(user_id, creds_dict)
         return {"message": "Google Calendar connected successfully."}
     except Exception as e:
+        print(f"Error exchanging Google auth code: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to exchange code: {str(e)}")
 
 @app.get("/auth/google/status")
